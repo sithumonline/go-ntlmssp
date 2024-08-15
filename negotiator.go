@@ -50,7 +50,7 @@ func (l Negotiator) RoundTrip(req *http.Request) (res *http.Response, err error)
 	if l.Logger != nil && req != nil {
 		bbReqDump, _ := httputil.DumpRequestOut(req, true)
 		l.Logger.DebugCtx(
-			req.Context(), "request ready to be sent",
+			req.Context(), "request ready to be sent;",
 			zap.String("method", req.Method),
 			zap.String("url", req.URL.String()),
 			zap.ByteString("request", bbReqDump),
@@ -86,7 +86,7 @@ func (l Negotiator) RoundTrip(req *http.Request) (res *http.Response, err error)
 	if res != nil && l.Logger != nil {
 		bbRspDump, _ := httputil.DumpResponse(res, true)
 		l.Logger.DebugCtx(
-			req.Context(), "response received",
+			req.Context(), "response received,",
 			zap.ByteString("response", bbRspDump),
 		)
 	}
@@ -108,7 +108,7 @@ func (l Negotiator) RoundTrip(req *http.Request) (res *http.Response, err error)
 		if res != nil && l.Logger != nil {
 			bbRspDump, _ := httputil.DumpResponse(res, true)
 			l.Logger.DebugCtx(
-				req.Context(), "response received",
+				req.Context(), "response received,,",
 				zap.ByteString("response", bbRspDump),
 			)
 		}
@@ -152,7 +152,7 @@ func (l Negotiator) RoundTrip(req *http.Request) (res *http.Response, err error)
 		if res != nil && l.Logger != nil {
 			bbRspDump, _ := httputil.DumpResponse(res, true)
 			l.Logger.DebugCtx(
-				req.Context(), "response received",
+				req.Context(), "response received,,,",
 				zap.ByteString("response", bbRspDump),
 			)
 		}
@@ -199,7 +199,7 @@ func (l Negotiator) RoundTrip(req *http.Request) (res *http.Response, err error)
 		if l.Logger != nil {
 			bbReqDump, _ := httputil.DumpRequestOut(req, true)
 			l.Logger.DebugCtx(
-				req.Context(), "request ready to be sent",
+				req.Context(), "request ready to be sent;;",
 				zap.String("method", req.Method),
 				zap.String("url", req.URL.String()),
 				zap.ByteString("request", bbReqDump),
