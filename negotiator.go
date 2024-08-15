@@ -47,24 +47,14 @@ type Negotiator struct {
 // RoundTrip sends the request to the server, handling any authentication
 // re-sends as needed.
 func (l Negotiator) RoundTrip(req *http.Request) (res *http.Response, err error) {
-	if l.Logger != nil {
-		if res != nil {
-			bbRspDump, _ := httputil.DumpResponse(res, true)
-			l.Logger.DebugCtx(
-				req.Context(), "response received",
-				zap.ByteString("response", bbRspDump),
-			)
-		}
-
-		if req != nil {
-			bbReqDump, _ := httputil.DumpRequestOut(req, true)
-			l.Logger.DebugCtx(
-				req.Context(), "request ready to be sent",
-				zap.String("method", req.Method),
-				zap.String("url", req.URL.String()),
-				zap.ByteString("request", bbReqDump),
-			)
-		}
+	if l.Logger != nil && req != nil {
+		bbReqDump, _ := httputil.DumpRequestOut(req, true)
+		l.Logger.DebugCtx(
+			req.Context(), "request ready to be sent",
+			zap.String("method", req.Method),
+			zap.String("url", req.URL.String()),
+			zap.ByteString("request", bbReqDump),
+		)
 	}
 
 	// Use default round tripper if not provided
@@ -93,6 +83,13 @@ func (l Negotiator) RoundTrip(req *http.Request) (res *http.Response, err error)
 	// authenticated from previous traffic
 	req.Header.Del("Authorization")
 	res, err = rt.RoundTrip(req)
+	if res != nil && l.Logger != nil {
+		bbRspDump, _ := httputil.DumpResponse(res, true)
+		l.Logger.DebugCtx(
+			req.Context(), "response received",
+			zap.ByteString("response", bbRspDump),
+		)
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -108,6 +105,13 @@ func (l Negotiator) RoundTrip(req *http.Request) (res *http.Response, err error)
 		req.Body = ioutil.NopCloser(bytes.NewReader(body.Bytes()))
 
 		res, err = rt.RoundTrip(req)
+		if res != nil && l.Logger != nil {
+			bbRspDump, _ := httputil.DumpResponse(res, true)
+			l.Logger.DebugCtx(
+				req.Context(), "response received",
+				zap.ByteString("response", bbRspDump),
+			)
+		}
 		if err != nil {
 			return nil, err
 		}
@@ -145,6 +149,13 @@ func (l Negotiator) RoundTrip(req *http.Request) (res *http.Response, err error)
 		req.Body = ioutil.NopCloser(bytes.NewReader(body.Bytes()))
 
 		res, err = rt.RoundTrip(req)
+		if res != nil && l.Logger != nil {
+			bbRspDump, _ := httputil.DumpResponse(res, true)
+			l.Logger.DebugCtx(
+				req.Context(), "response received",
+				zap.ByteString("response", bbRspDump),
+			)
+		}
 		if err != nil {
 			return nil, err
 		}
