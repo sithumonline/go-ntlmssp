@@ -48,19 +48,23 @@ type Negotiator struct {
 // re-sends as needed.
 func (l Negotiator) RoundTrip(req *http.Request) (res *http.Response, err error) {
 	if l.Logger != nil {
-		bbRspDump, _ := httputil.DumpResponse(res, true)
-		l.Logger.DebugCtx(
-			req.Context(), "response received",
-			zap.ByteString("response", bbRspDump),
-		)
+		if res != nil {
+			bbRspDump, _ := httputil.DumpResponse(res, true)
+			l.Logger.DebugCtx(
+				req.Context(), "response received",
+				zap.ByteString("response", bbRspDump),
+			)
+		}
 
-		bbReqDump, _ := httputil.DumpRequestOut(req, true)
-		l.Logger.DebugCtx(
-			req.Context(), "request ready to be sent",
-			zap.String("method", req.Method),
-			zap.String("url", req.URL.String()),
-			zap.ByteString("request", bbReqDump),
-		)
+		if req != nil {
+			bbReqDump, _ := httputil.DumpRequestOut(req, true)
+			l.Logger.DebugCtx(
+				req.Context(), "request ready to be sent",
+				zap.String("method", req.Method),
+				zap.String("url", req.URL.String()),
+				zap.ByteString("request", bbReqDump),
+			)
+		}
 	}
 
 	// Use default round tripper if not provided
