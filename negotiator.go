@@ -2,6 +2,7 @@ package ntlmssp
 
 import (
 	"bytes"
+	"context"
 	"crypto"
 	"crypto/tls"
 	"crypto/x509"
@@ -10,7 +11,11 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"net/http/httputil"
 	"strings"
+
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 // GetDomain : parse domain name from based on slashes in the input
@@ -25,13 +30,39 @@ func GetDomain(user string) (string, string) {
 	return user, domain
 }
 
-//Negotiator is a http.Roundtripper decorator that automatically
-//converts basic authentication to NTLM/Negotiate authentication when appropriate.
-type Negotiator struct{ http.RoundTripper }
+type Logger interface {
+	DebugCtx(ctx context.Context, msg string, fields ...zapcore.Field)
+	InfoCtx(ctx context.Context, msg string, fields ...zapcore.Field)
+	WarnCtx(ctx context.Context, msg string, fields ...zapcore.Field)
+	ErrorCtx(ctx context.Context, msg string, fields ...zapcore.Field)
+}
 
-//RoundTrip sends the request to the server, handling any authentication
-//re-sends as needed.
+// Negotiator is a http.Roundtripper decorator that automatically
+// converts basic authentication to NTLM/Negotiate authentication when appropriate.
+type Negotiator struct {
+	http.RoundTripper
+	Logger Logger
+}
+
+// RoundTrip sends the request to the server, handling any authentication
+// re-sends as needed.
 func (l Negotiator) RoundTrip(req *http.Request) (res *http.Response, err error) {
+	if l.Logger != nil {
+		bbRspDump, _ := httputil.DumpResponse(res, true)
+		l.Logger.DebugCtx(
+			req.Context(), "response received",
+			zap.ByteString("response", bbRspDump),
+		)
+
+		bbReqDump, _ := httputil.DumpRequestOut(req, true)
+		l.Logger.DebugCtx(
+			req.Context(), "request ready to be sent",
+			zap.String("method", req.Method),
+			zap.String("url", req.URL.String()),
+			zap.ByteString("request", bbReqDump),
+		)
+	}
+
 	// Use default round tripper if not provided
 	rt := l.RoundTripper
 	if rt == nil {
