@@ -196,6 +196,16 @@ func (l Negotiator) RoundTrip(req *http.Request) (res *http.Response, err error)
 
 		req.Body = ioutil.NopCloser(bytes.NewReader(body.Bytes()))
 
+		if l.Logger != nil {
+			bbReqDump, _ := httputil.DumpRequestOut(req, true)
+			l.Logger.DebugCtx(
+				req.Context(), "request ready to be sent",
+				zap.String("method", req.Method),
+				zap.String("url", req.URL.String()),
+				zap.ByteString("request", bbReqDump),
+			)
+		}
+
 		return rt.RoundTrip(req)
 	}
 
